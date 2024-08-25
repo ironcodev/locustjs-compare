@@ -1,2 +1,3 @@
-# locustjs-compare
-This library provides abstractions for comparison and comparers.
+# @locustjs/compare
+This library provides classes for equality comparison and comparers.
+

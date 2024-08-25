@@ -1,119 +1,397 @@
-import { isArray, isPrimitive, isEmpty, isNullOrEmpty, isFunction, isIterable, isString, isNull, isObject } from '@locustjs/base';
+import {
+  isArray,
+  isPrimitive,
+  isNullOrEmpty,
+  isIterable,
+  isString,
+  isObject,
+  isBool,
+  isFunction,
+} from "@locustjs/base";
+import {
+  throwIfInstantiateAbstract,
+  throwNotImplementedException,
+} from "@locustjs/exception";
+import Enum from "@locustjs/enum";
+
+const ScalerEqualityComparerType = Enum.define(
+  {
+    loose: 0,
+    tight: 1,
+  },
+  "ScalerEqualityComparerType"
+);
+
+const ComplexEqualityComparerType = Enum.define(
+  {
+    shape: 0,
+    ref: 1,
+  },
+  "ComplexEqualityComparerType"
+);
+
+const FunctionEqualityComparerType = Enum.define(
+  {
+    ref: 0,
+    source: 1,
+    ignore: 2,
+  },
+  "FunctionEqualityComparerType"
+);
+
+const EqualityComparerType = Enum.define(
+  {
+    looseShape: 0,
+    looseRef: 1,
+    tightShape: 2,
+    tightRef: 3,
+  },
+  "EqualityComparerType"
+);
+
+const StringEqualityComparerType = Enum.define(
+  {
+    ordinal: 0,
+    ignoreCase: 1,
+  },
+  "StringEqualityComparerType"
+);
+
+const EqualityComparerSymbol = Symbol();
+
+const EqualityComparerOptions = {
+  LooseShape: Object.freeze({
+    [EqualityComparerSymbol]: true,
+    null: "loose",
+    primitive: "loose",
+    string: "ordinal",
+    array: "shape",
+    iterable: "shape",
+    object: "shape",
+    function: "ref",
+  }),
+  TightShape: Object.freeze({
+    [EqualityComparerSymbol]: true,
+    null: "tight",
+    primitive: "tight",
+    string: "ordinal",
+    array: "shape",
+    iterable: "shape",
+    object: "shape",
+    function: "ref",
+  }),
+  LooseRef: Object.freeze({
+    [EqualityComparerSymbol]: true,
+    null: "loose",
+    primitive: "loose",
+    string: "ordinal",
+    array: "ref",
+    iterable: "ref",
+    object: "ref",
+    function: "ref",
+  }),
+  TightRef: Object.freeze({
+    [EqualityComparerSymbol]: true,
+    null: "tight",
+    primitive: "tight",
+    string: "ordinal",
+    array: "ref",
+    iterable: "ref",
+    object: "ref",
+    function: "ref",
+  }),
+};
 
 class EqualityComparer {
-  constructor() {
-    if (this.constructor === EqualityComparer) {
-      throw `Cannot instantiate from abstract class EqualityComparer`
-    }
-  }
-  equals(x, y) {
-    throw `${this.constructor.name}.equals() is not implemented`
-  }
-}
+  constructor(options) {
+    throwIfInstantiateAbstract(EqualityComparer, this);
 
-class NullOrEmptyEqualityComparer extends EqualityComparer {
-  equals(x, y) {
-    if (isNullOrEmpty(x)) {
-      if (isNullOrEmpty(y)) {
-        return true;
-      } else {
-        return false;
-      }
-    } else {
-      if (isNullOrEmpty(y)) {
-        return false;
-      } else {
-        return true;
-      }
-    }
+    this.options = EqualityComparer.getOptions(options);
   }
-}
-
-class NullOrUndefinedEqualityComparer extends EqualityComparer {
   equals(x, y) {
-    if (isNull(x)) {
-      if (isNull(y)) {
-        return true;
-      } else {
-        return false;
-      }
-    } else {
-      if (isNull(y)) {
-        return false;
-      } else {
-        return true;
-      }
+    throwNotImplementedException(`${this.constructor.name}.equals(x, y)`);
+  }
+  static getOptions(options) {
+    if (options && options[EqualityComparerSymbol]) {
+      return options;
     }
+    // default is loose-shape
+    let result = EqualityComparerOptions.LooseShape;
+
+    if (isPrimitive(options)) {
+      if (isBool(options)) {
+        if (options) {
+          // tight-shape
+          result = EqualityComparerOptions.TightShape;
+        } else {
+          // default (loose-shape)
+        }
+      } else {
+        if (isString(options)) {
+          if (options == "looseshape" || options == "loose-shape") {
+            options = "looseShape";
+          } else if (options == "looseref" || options == "loose-ref") {
+            options = "looseRef";
+          } else if (options == "tightshape" || options == "tight-shape") {
+            options = "tightShape";
+          } else if (options == "tightref" || options == "tight-ref") {
+            options = "tightShape";
+          } else if (options == "loose") {
+            options = "looseShape";
+          } else if (options == "tight") {
+            options = "tightRef";
+          } else if (options == "ref") {
+            options = "looseRef";
+          } else if (options == "shape") {
+            options = "looseShape";
+          }
+        }
+
+        const type = EqualityComparerType.getNumber(
+          options,
+          EqualityComparerType.looseShape
+        );
+
+        switch (type) {
+          case EqualityComparerType.looseShape:
+            // default
+            break;
+          case EqualityComparerType.looseRef:
+            result = EqualityComparerOptions.LooseRef;
+            break;
+          case EqualityComparerType.tightShape:
+            result = EqualityComparerOptions.TightShape;
+            break;
+          case EqualityComparerType.tightRef:
+            result = EqualityComparerOptions.TightRef;
+            break;
+        }
+      }
+    } else if (!isNullOrEmpty(options)) {
+      result = {
+        null: isFunction(options.null)
+          ? options.null
+          : ScalerEqualityComparerType.getString(options.null || "loose"),
+        primitive: isFunction(options.primitive)
+          ? options.primitive
+          : ScalerEqualityComparerType.getString(options.primitive || "loose"),
+        string: isFunction(options.string)
+          ? options.string
+          : StringEqualityComparerType.getString(options.string || "ordinal"),
+        array: isFunction(options.array)
+          ? options.array
+          : ComplexEqualityComparerType.getString(options.array || "shape"),
+        iterable: isFunction(options.iterable)
+          ? options.iterable
+          : ComplexEqualityComparerType.getString(options.iterable || "shape"),
+        object: isFunction(options.object)
+          ? options.object
+          : ComplexEqualityComparerType.getString(options.object || "shape"),
+        function: isFunction(options["function"])
+          ? options["function"]
+          : FunctionEqualityComparerType.getString(
+              options["function"] || "ref"
+            ),
+      };
+    } else {
+      // default (loose-shape)
+    }
+
+    return result;
   }
 }
 
 class BaseEqualityComparer extends EqualityComparer {
-  constructor(compareOptions) {
-    super();
-
-    if (this.constructor === BaseEqualityComparer) {
-      throw `Cannot instantiate from abstract class BaseEqualityComparer`
-    }
-
-    this.options = Object.assign({
-      primitives: 'strict',
-      arrays: 'by-shape',
-      iterators: 'by-shape',
-      objects: 'by-shape',
-      undefinedAsNull: true
-    }, compareOptions);
-  }
-  _equals(x, y) {
-    throw `${this.constructor.name}._equals() is not implemented`
-  }
-  equals(x, y) {
-    if (EqualityComparer.Null.equals(x, y)) {
-      return true;
+  constructor(options, prop) {
+    if (isFunction(options)) {
+      super({ [prop]: options });
     } else {
-      return this._equals(x, y);
+      super(options);
     }
   }
-}
+  _init(arr, itr, obj) {
+    if (!this._initialized) {
+      this._arrayEqualityComparer =
+        arr || new ArrayEqualityComparer(this.options);
+      this._iterableEqualityComparer =
+        itr || new IterableEqualityComparer(this.options);
+      this._objectEqualityComparer =
+        obj || new ObjectEqualityComparer(this.options);
 
-class DefaultEqualityComparer extends EqualityComparer {
-  equals(x, y) {
-    return this.strict ? x === y : x == y;
+      this._initialized = true;
+    }
   }
-}
+  _equals(a, b) {
+    let result = false;
 
-class PrimitiveEqualityComparer extends BaseEqualityComparer {
-  _equals(x, y) {
-    // string is an exception among primitive types
-    if (isString(x) || isString(y)) {
-      if (StringComparer.getEqualityComparer(this.strict).equals(x, y)) {
-        return true;
+    do {
+      if (isObject(a) || isObject(b)) {
+        if (this.options.object == 'ref') {
+          if (a !== b) {
+            break;
+          }
+        }
+        if (!this._objectEqualityComparer.equals(a, b)) {
+          break;
+        }
+      } else if (isArray(a) || isArray(b)) {
+        if (this.options.array == 'ref') {
+          if (a !== b) {
+            break;
+          }
+        }
+        if (!this._arrayEqualityComparer.equals(a, b)) {
+          break;
+        }
+      } else if (isPrimitive(a) || isPrimitive(b)) {
+        if (this.options.primitive == "loose") {
+          if (!EqualityComparer.Primitive.Loose.equals(a, b)) {
+            break;
+          }
+        } else {
+          if (!EqualityComparer.Primitive.Tight.equals(a, b)) {
+            break;
+          }
+        }
+      } else if (isNullOrEmpty(a) || isNullOrEmpty(b)) {
+        if (this.options.null == "loose") {
+          if (!EqualityComparer.Null.Loose.equals(a, b)) {
+            break;
+          }
+        } else {
+          if (!EqualityComparer.Null.Tight.equals(a, b)) {
+            break;
+          }
+        }
+      } else if (isIterable(a) || isIterable(b)) {
+        if (!this._iterableEqualityComparer.equals(a, b)) {
+          break;
+        }
+      } else if (isFunction(a) || isFunction(b)) {
+        if (!this._functionEqualityComparer.equals(a, b)) {
+          break;
+        }
       }
+
+      result = true;
+    } while (false);
+
+    return result;
+  }
+}
+
+class NullOrEmptyEqualityComparer extends EqualityComparer {
+  constructor(options) {
+    if (isFunction(options)) {
+      super({ null: options });
+    } else {
+      super(options);
+    }
+  }
+  equals(x, y) {
+    if (isFunction(this.options.null)) {
+      return this.options.null(x, y);
     }
 
-    if (isPrimitive(x) && isPrimitive(y)) {
-      return this.strict ? x === y : x == y;
-    } else {
-      return false;
+    if (this.options.null == "loose") {
+      return isNullOrEmpty(x) && isNullOrEmpty(y);
     }
+
+    return x === y && isNullOrEmpty(x) && isNullOrEmpty(y);
+  }
+}
+
+class FunctionEqualityComparer extends BaseEqualityComparer {
+  constructor(options) {
+    super(options, "function");
+  }
+  equals(x, y) {
+    if (isFunction(this.options["function"])) {
+      return this.options["function"](x, y);
+    }
+
+    if (this.options["function"] == "ignore") {
+      return true;
+    }
+
+    if (isFunction(x) && isFunction(y)) {
+      if (this.options["function"] == "source") {
+        return x.toString() == y.toString();
+      }
+
+      return x == y;
+    }
+
+    return false;
   }
 }
 
 class StringEqualityComparer extends BaseEqualityComparer {
-  _equals(strA, strB) {
+  constructor(options) {
+    super(options, "string");
+  }
+  equals(strA, strB) {
+    if (isFunction(this.options.string)) {
+      return this.options.string(strA, strB);
+    }
+
     const isStrA = isString(strA);
     const isStrB = isString(strB);
 
-    // contract: we presume '' and null or '' and undefined are equal
+    if (this.options.primitive == "loose") {
+      // contract: we assume '' and null or '' and undefined are equal
+      if (isNullOrEmpty(strA) && isNullOrEmpty(strB)) {
+        return true;
+      }
 
-    if (isStrA && strA.length === 0 && isNull(strB)) {
-      return true;
+      if (isNullOrEmpty(strA) || isNullOrEmpty(strB)) {
+        return false;
+      }
+
+      return this.options.string == "ordinal"
+        ? strA.toString() == strB.toString()
+        : strA.toString().toLowerCase() === strB.toString().toLowerCase();
+    } else {
+      if (isStrA && isStrB) {
+        return this.options.string == "ordinal"
+          ? strA == strB
+          : strA.toLowerCase() == strB.toLowerCase();
+      } else {
+        return false;
+      }
     }
-    if (isStrB && strB.length === 0 && isNull(strA)) {
-      return true;
+  }
+}
+
+class PrimitiveEqualityComparer extends BaseEqualityComparer {
+  constructor(options) {
+    super(options, "primitive");
+  }
+  equals(x, y) {
+    // string is an exception among primitive types
+
+    if (isString(x) || isString(y)) {
+      if (this.options.string == "ordinal") {
+        if (this.options.primitive == "loose") {
+          return EqualityComparer.String.LooseOrdinal.equals(x, y);
+        } else {
+          return EqualityComparer.String.TightOrdinal.equals(x, y);
+        }
+      } else {
+        if (this.options.primitive == "loose") {
+          return EqualityComparer.String.LooseIgnoreCase.equals(x, y);
+        } else {
+          return EqualityComparer.String.TightIgnoreCase.equals(x, y);
+        }
+      }
     }
 
-    if (isStrA && isStrB) {
-      return this.strict ? strA === strB : strA.toLowerCase() === strB.toLowerCase();
+    if (isPrimitive(x) && isPrimitive(y)) {
+      if (isFunction(this.options.primitive)) {
+        return this.options.primitive(x, y);
+      }
+
+      return this.options.primitive == "tight" ? x === y : x == y;
     } else {
       return false;
     }
@@ -121,38 +399,50 @@ class StringEqualityComparer extends BaseEqualityComparer {
 }
 
 class ArrayEqualityComparer extends BaseEqualityComparer {
-  _equals(arrA, arrB) {
+  constructor(options) {
+    super(options, "array");
+  }
+  equals(arrA, arrB) {
+    let result = false;
+
+    this._init(this);
+
     if (isArray(arrA) && isArray(arrB) && arrA.length === arrB.length) {
-      const comparer = AnyEqualityComparer.getEqualityComparer(this.strict);
+      let i = 0;
 
       for (let index = 0; index < arrA.length; index++) {
-        if (!comparer.equals(arrA[index], arrB[index])) {
-          return false;
+        const a = arrA[index];
+        const b = arrB[index];
+
+        if (!this._equals(a, b)) {
+          break;
         }
+
+        i++;
       }
 
-      return true;
+      result = i == arrA.length;
     }
 
-    return false;
+    return result;
   }
 }
 
 class IterableEqualityComparer extends BaseEqualityComparer {
-  _equals(itA, itB) {
+  constructor(options) {
+    super(options, "iterable");
+  }
+  equals(itA, itB) {
     if (isIterable(itA) && isIterable(itB)) {
-      if (isArray(itA) && isArray(itB)) {
-        const comparer = ArrayEqualityComparer.getEqualityComparer(this.strict);
+      this._init(null, this);
 
-        return comparer.equals(itA, itB);
+      if (isArray(itA) && isArray(itB)) {
+        return this._arrayEqualityComparer.equals(itA, itB);
       }
 
-      let currentA, currentB;
-      const comparer = AnyEqualityComparer.getEqualityComparer(this.strict);
-
       while (true) {
-        currentA = itA.next();
-        currentB = itB.next();
+        const currentA = itA.next();
+        const currentB = itB.next();
 
         if (currentA.done) {
           if (currentB.done) {
@@ -164,8 +454,11 @@ class IterableEqualityComparer extends BaseEqualityComparer {
           if (currentB.done) {
             return false;
           } else {
-            if (!comparer.equals(currentA.value, currentB.value)) {
-              return false;
+            const a = currentA.value;
+            const b = currentB.value;
+
+            if (!this._equals(a, b)) {
+              break;
             }
           }
         }
@@ -177,180 +470,165 @@ class IterableEqualityComparer extends BaseEqualityComparer {
 }
 
 class ObjectEqualityComparer extends BaseEqualityComparer {
-  constructor(strict) {
-    super(strict);
-
-    if (this.constructor === ObjectEqualityComparer) {
-      throw `Cannot instantiate from abstract class ObjectEqualityComparer`
-    }
+  constructor(options) {
+    super(options, "object");
   }
-  __equals(objA, objB) {
-    throw `${this.constructor.name}.__equals() is not implemented`
-  }
-  _equals(objA, objB) {
-    if (isObject(objA) && isObject(objB)) {
-      return this.__equals(objA, objB);
-    } else {
-      return false;
-    }
-  }
-}
+  equals(objA, objB) {
+    let result = false;
 
-class ObjectReferenceEqualityComparer extends ObjectEqualityComparer {
-  __equals(objA, objB) {
-    return objA == objB;
-  }
-}
+    this._init(null, null, this);
 
-class ObjectShapeEqualityComparer extends ObjectEqualityComparer {
-  __equals(objA, objB) {
-    const keysA = Object.keys(objA);
-    const keysB = Object.keys(objB);
-
-    if (keysA.length != keysB.length) {
-      return false;
-    }
-
-    const comparer = AnyEqualityComparer.getEqualityComparer(this.strict);
-
-    for (let key of keysA) {
-      if (!comparer.equals(objA[key], objB[key])) {
-        return false;
+    do {
+      if (!isObject(objA) || !isObject(objB)) {
+        break;
       }
-    }
+      
+      const keysA = Object.keys(objA);
+      const keysB = Object.keys(objB);
 
-    return true;
+      if (keysA.length != keysB.length) {
+        break;
+      }
+
+      let i = 0;
+
+      for (let key of keysA) {
+        if (keysB.indexOf(key) < 0) {
+          break;
+        }
+
+        const a = objA[key];
+        const b = objB[key];
+
+        if (!this._equals(a, b)) {
+          break;
+        }
+
+        i++;
+      }
+
+      result = i == keysA.length;
+    } while (false);
+
+    return result;
   }
 }
 
-class AnyEqualityComparer extends BaseEqualityComparer {
-  _equals(x, y) {
-    if (isPrimitive(x) || isPrimitive(y)) {
-      return PrimitiveEqualityComparer.getEqualityComparer(this.strict).equals(x, y);
-    }
-
-    if (isArray(x) || isArray(y)) {
-      return ArrayEqualityComparer.getEqualityComparer(this.strict).equals(x, y);
-    }
-
-    if (isIterable(x) || isIterable(y)) {
-      return IterableEqualityComparer.getEqualityComparer(this.strict).equals(x, y);
-    }
-
-    if (isObject(x) || isObject(y)) {
-      return ObjectEqualityComparer.getEqualityComparer(this.strict).equals(x, y);
-    }
-
-    return DefaultEqualityComparer.getEqualityComparer(this.strict).equals(x, y);
-  }
-}
-
-EqualityComparer.Empty = new NullOrEmptyEqualityComparer();
-EqualityComparer.Null = new NullOrUndefinedEqualityComparer();
-EqualityComparer.Default = {
-  Loose: new DefaultEqualityComparer(false),
-  Tight: new DefaultEqualityComparer(true)
-}
+EqualityComparer.Null = {
+  Loose: new NullOrEmptyEqualityComparer(false),
+  Tight: new NullOrEmptyEqualityComparer(true),
+};
 EqualityComparer.String = {
-  Ordinal: new StringEqualityComparer(true),
-  IgnoreCase: new StringEqualityComparer(false)
-}
+  LooseOrdinal: new StringEqualityComparer({
+    string: "ordinal",
+    primitive: "loose",
+  }),
+  LooseIgnoreCase: new StringEqualityComparer({
+    string: "ignoreCase",
+    primitive: "loose",
+  }),
+  TightOrdinal: new StringEqualityComparer({
+    string: "ordinal",
+    primitive: "tight",
+  }),
+  TightIgnoreCase: new StringEqualityComparer({
+    string: "ignoreCase",
+    primitive: "tight",
+  }),
+};
+EqualityComparer.String.Ordinal = EqualityComparer.String.LooseOrdinal;
+EqualityComparer.String.IgnoreCase = EqualityComparer.String.LooseIgnoreCase;
+
 EqualityComparer.Primitive = {
   Loose: new PrimitiveEqualityComparer(false),
-  Tight: new PrimitiveEqualityComparer(true)
-}
+  Tight: new PrimitiveEqualityComparer(true),
+};
 EqualityComparer.Array = {
-  Loose: new ArrayEqualityComparer(false),
-  Tight: new ArrayEqualityComparer(true)
-}
+  LooseShape: new ArrayEqualityComparer(EqualityComparerOptions.LooseShape),
+  TightShape: new ArrayEqualityComparer(EqualityComparerOptions.TightShape),
+  LooseRef: new ArrayEqualityComparer(EqualityComparerOptions.LooseRef),
+  TightRef: new ArrayEqualityComparer(EqualityComparerOptions.TightRef),
+};
 EqualityComparer.Iterable = {
-  Loose: new IterableEqualityComparer(false),
-  Tight: new IterableEqualityComparer(true)
-}
+  LooseShape: new IterableEqualityComparer(EqualityComparerOptions.LooseShape),
+  TightShape: new IterableEqualityComparer(EqualityComparerOptions.TightShape),
+  LooseRef: new IterableEqualityComparer(EqualityComparerOptions.LooseRef),
+  TightRef: new IterableEqualityComparer(EqualityComparerOptions.TightRef),
+};
 EqualityComparer.Object = {
-  Shape: {
-    Loose: new ObjectShapeEqualityComparer(false),
-    Tight: new ObjectShapeEqualityComparer(true)
-  },
-  Reference: {
-    Loose: new ObjectReferenceEqualityComparer(false),
-    Tight: new ObjectReferenceEqualityComparer(true)
-  }
-}
-EqualityComparer.Any = {
-  Loose: new AnyEqualityComparer(false),
-  Tight: new AnyEqualityComparer(true)
-}
-
-DefaultEqualityComparer.getEqualityComparer = function (strict) {
-  return strict ? EqualityComparer.Default.Ordinal : EqualityComparer.Default.IgnoreCase;
-}
-PrimitiveEqualityComparer.getEqualityComparer = function (strict) {
-  return strict ? EqualityComparer.Primitive.Ordinal : EqualityComparer.Primitive.IgnoreCase;
-}
-StringEqualityComparer.getEqualityComparer = function (strict) {
-  return strict ? EqualityComparer.String.Ordinal : EqualityComparer.String.IgnoreCase;
-}
-ArrayEqualityComparer.getEqualityComparer = function (strict) {
-  return strict ? EqualityComparer.Array.Tight : EqualityComparer.Array.Loose;
-}
-IterableEqualityComparer.getEqualityComparer = function (strict) {
-  return strict ? EqualityComparer.Iterable.Tight : EqualityComparer.Iterable.Loose;
-}
-ObjectEqualityComparer.getEqualityComparer = function (reference, strict) {
-  return strict ? EqualityComparer.Object.Tight : EqualityComparer.Object.Loose;
-}
-AnyEqualityComparer.getEqualityComparer = function (strict) {
-  return strict ? EqualityComparer.Any.Tight : EqualityComparer.Any.Loose;
-}
+  LooseShape: new ObjectEqualityComparer(EqualityComparerOptions.LooseShape),
+  TightShape: new ObjectEqualityComparer(EqualityComparerOptions.TightShape),
+  LooseRef: new ObjectEqualityComparer(EqualityComparerOptions.LooseRef),
+  TightRef: new ObjectEqualityComparer(EqualityComparerOptions.TightRef),
+};
 
 class Comparer {
   constructor() {
-    if (this.constructor === Comparer) {
-      throw `Cannot instantiate from abstract class Comparer`
-    }
+    throwIfInstantiateAbstract(Comparer, this);
   }
   compare(x, y) {
-    throw `${this.constructor.name}.compare() is not implemented`
+    throwNotImplementedException(`${this.constructor.name}.compare(x, y)`);
   }
 }
 
 class StringOrdinalComparer extends Comparer {
-  compare(x, y) {
-    return x == y;
+  compare(a, b) {
+    const strA = isNullOrEmpty(a) ? "" : a.toString();
+    const strB = isNullOrEmpty(b) ? "" : b.toString();
+
+    if (strA == strB) {
+      return 0;
+    }
+    if (strA < strB) {
+      return -1;
+    }
+
+    return 1;
   }
 }
 
 class StringOrdinalIgnoreCaseComparer extends Comparer {
-  compare(x, y) {
-    return x.toLowerCase() == y.toLowerCase();
+  compare(a, b) {
+    const strA = isNullOrEmpty(a) ? "" : a.toString();
+    const strB = isNullOrEmpty(b) ? "" : b.toString();
+
+    if (strA.toLowerCase() == strB.toLowerCase()) {
+      return 0;
+    }
+    if (strA < strB) {
+      return -1;
+    }
+
+    return 1;
   }
 }
-
-const stringOrdinalComparer = new StringOrdinalComparer();
-const stringOrdinalIgnoreCaseComparer = new StringOrdinalIgnoreCaseComparer();
 
 const StringComparer = {
-  Ordinal: stringOrdinalComparer,
-  IgnoreCase: stringOrdinalIgnoreCaseComparer
-}
+  Ordinal: new StringOrdinalComparer(),
+  IgnoreCase: new StringOrdinalIgnoreCaseComparer(),
+};
 
-class Comparable {
-  compareTo(x) {
-
-  }
-}
-
-const isComparable = x => x && typeof x.compareTo == 'function';
+const isComparable = (x) => isObject(x) && typeof x.compareTo == "function";
 
 export {
+  ScalerEqualityComparerType,
+  ComplexEqualityComparerType,
+  FunctionEqualityComparerType,
+  EqualityComparerType,
+  StringEqualityComparerType,
+  EqualityComparerOptions,
   EqualityComparer,
-  DefaultEqualityComparer as TypeEqualityComparer,
+  BaseEqualityComparer,
+  NullOrEmptyEqualityComparer,
+  FunctionEqualityComparer,
+  StringEqualityComparer,
+  PrimitiveEqualityComparer,
   ArrayEqualityComparer,
   IterableEqualityComparer,
   ObjectEqualityComparer,
   Comparer,
-  Comparable,
+  StringOrdinalComparer,
+  StringOrdinalIgnoreCaseComparer,
+  StringComparer,
   isComparable,
-  StringComparer
-}
+};
