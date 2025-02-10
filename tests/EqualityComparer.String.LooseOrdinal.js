@@ -1,4 +1,4 @@
-import { EqualityComparer } from "../index.esm.js";
+import { EqualityComparer } from "../src";
 
 const tests = [
   [

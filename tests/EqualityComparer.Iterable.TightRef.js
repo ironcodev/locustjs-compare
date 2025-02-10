@@ -2,7 +2,7 @@ import { EqualityComparer } from "../src";
 
 const tests = [
   [
-    "EqualityComparer.Iterable.LooseRef 1-1",
+    "EqualityComparer.Iterable.TightRef 1-1",
     function (expect) {
       function* itA() {
         yield 1;
@@ -10,13 +10,13 @@ const tests = [
       function* itB() {
         yield 1;
       }
-      const r = EqualityComparer.Iterable.LooseRef.equals(itA(), itB());
+      const r = EqualityComparer.Iterable.TightRef.equals(itA(), itB());
 
       expect(r).toBeTrue();
     },
   ],
   [
-    "EqualityComparer.Iterable.LooseRef 1-2",
+    "EqualityComparer.Iterable.TightRef 1-2",
     function (expect) {
       function* itA() {
         yield 1;
@@ -24,29 +24,29 @@ const tests = [
       function* itB() {
         yield "1";
       }
-      const r = EqualityComparer.Iterable.LooseRef.equals(itA(), itB());
+      const r = EqualityComparer.Iterable.TightRef.equals(itA(), itB());
 
-      expect(r).toBeTrue();
+      expect(r).toBeFalse();
     },
   ],
   [
-    "EqualityComparer.Iterable.LooseRef 1-3",
+    "EqualityComparer.Iterable.TightRef 1-3",
     function (expect) {
       function* itA() {
         yield 1;
         yield null;
       }
       function* itB() {
-        yield "1";
+        yield 1;
         yield undefined;
       }
-      const r = EqualityComparer.Iterable.LooseRef.equals(itA(), itB());
+      const r = EqualityComparer.Iterable.TightRef.equals(itA(), itB());
 
-      expect(r).toBeTrue();
+      expect(r).toBeFalse();
     },
   ],
   [
-    "EqualityComparer.Iterable.LooseRef 1-4",
+    "EqualityComparer.Iterable.TightRef 1-4",
     function (expect) {
       function* itA() {
         yield null;
@@ -54,13 +54,13 @@ const tests = [
       function* itB() {
         yield "";
       }
-      const r = EqualityComparer.Iterable.LooseRef.equals(itA(), itB());
+      const r = EqualityComparer.Iterable.TightRef.equals(itA(), itB());
 
-      expect(r).toBeTrue();
+      expect(r).toBeFalse();
     },
   ],
   [
-    "EqualityComparer.Iterable.LooseRef 1-5",
+    "EqualityComparer.Iterable.TightRef 1-5",
     function (expect) {
       function* itA() {
         yield undefined;
@@ -68,13 +68,13 @@ const tests = [
       function* itB() {
         yield "";
       }
-      const r = EqualityComparer.Iterable.LooseRef.equals(itA(), itB());
+      const r = EqualityComparer.Iterable.TightRef.equals(itA(), itB());
 
-      expect(r).toBeTrue();
+      expect(r).toBeFalse();
     },
   ],
   [
-    "EqualityComparer.Iterable.LooseRef 1-6",
+    "EqualityComparer.Iterable.TightRef 1-6",
     function (expect) {
       function* itA() {
         yield {};
@@ -82,13 +82,13 @@ const tests = [
       function* itB() {
         yield {};
       }
-      const r = EqualityComparer.Iterable.LooseRef.equals(itA(), itB());
+      const r = EqualityComparer.Iterable.TightRef.equals(itA(), itB());
 
       expect(r).toBeFalse();
     },
   ],
   [
-    "EqualityComparer.Iterable.LooseRef 1-7",
+    "EqualityComparer.Iterable.TightRef 1-7",
     function (expect) {
       function* itA() {
         yield { a: 1 };
@@ -96,13 +96,13 @@ const tests = [
       function* itB() {
         yield { a: 1 };
       }
-      const r = EqualityComparer.Iterable.LooseRef.equals(itA(), itB());
+      const r = EqualityComparer.Iterable.TightRef.equals(itA(), itB());
 
       expect(r).toBeFalse();
     },
   ],
   [
-    "EqualityComparer.Iterable.LooseRef 1-8",
+    "EqualityComparer.Iterable.TightRef 1-8",
     function (expect) {
       const x = { a: 1 };
       function* itA() {
@@ -111,28 +111,29 @@ const tests = [
       function* itB() {
         yield x;
       }
-      const r = EqualityComparer.Iterable.LooseRef.equals(itA(), itB());
+      const r = EqualityComparer.Iterable.TightRef.equals(itA(), itB());
 
       expect(r).toBeTrue();
     },
   ],
   [
-    "EqualityComparer.Iterable.LooseRef 1-9",
+    "EqualityComparer.Iterable.TightRef 1-9",
     function (expect) {
       const x = { a: 1, b: { x: 5, s: [1] } };
+      const y = x;
       function* itA() {
         yield x;
       }
       function* itB() {
-        yield x;
+        yield y;
       }
-      const r = EqualityComparer.Iterable.LooseRef.equals(itA(), itB());
+      const r = EqualityComparer.Iterable.TightRef.equals(itA(), itB());
 
       expect(r).toBeTrue();
     },
   ],
   [
-    "EqualityComparer.Iterable.LooseRef 1-10",
+    "EqualityComparer.Iterable.TightRef 1-10",
     function (expect) {
       const x = { a: 1, b: { x: 5, s: [1] } };
       const y = { a: 1, b: x.b };
@@ -142,7 +143,7 @@ const tests = [
       function* itB() {
         yield y;
       }
-      const r = EqualityComparer.Iterable.LooseRef.equals(itA(), itB());
+      const r = EqualityComparer.Iterable.TightRef.equals(itA(), itB());
 
       expect(r).toBeFalse();
     },

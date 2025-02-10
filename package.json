@@ -1,11 +1,11 @@
 {
   "name": "@locustjs/compare",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "This library provides abstractions for comparison and comparers",
-  "main": "index.cjs.js",
-  "module": "index.esm.js",
+  "main": "dist/index.js",
+  "module": "src/index.js",
   "scripts": {
-    "build": "babel index.esm.js -o index.cjs.js",
+    "build": "rollup -c",
     "test": "node -r esm ./tests/index.js"
   },
   "repository": {
@@ -26,15 +26,15 @@
   },
   "homepage": "https://github.com/ironcodev/locustjs-compare#readme",
   "devDependencies": {
-    "@babel/cli": "^7.21.0",
-    "@babel/core": "^7.21.3",
-    "@babel/preset-env": "^7.20.2",
-    "@locustjs/test": "^1.5.0",
-    "esm": "^3.2.25"
+    "@babel/preset-env": "^7.26.0",
+    "@rollup/plugin-babel": "^6.0.4",
+    "esm": "^3.2.25",
+    "rollup": "^4.29.1",
+    "@locustjs/test": "^2.0.1"
   },
   "dependencies": {
-    "@locustjs/base": "^4.1.0",
-    "@locustjs/enum": "^2.0.0",
-    "@locustjs/exception": "^2.0.1"
+    "@locustjs/base": "^4.4.1",
+    "@locustjs/enum": "^3.0.0",
+    "@locustjs/exception": "^2.1.1"
   }
 }

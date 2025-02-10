@@ -1,4 +1,4 @@
-import TestRunner from "@locustjs/test";
+import { TestRunner } from "@locustjs/test";
 import test1 from "./EqualityComparer.Null.Loose";
 import test2 from "./EqualityComparer.Null.Tight";
 import test3 from "./EqualityComparer.Primitive.Loose";
@@ -17,26 +17,30 @@ import test15 from "./EqualityComparer.Array.TightShape";
 import test16 from "./EqualityComparer.Array.TightRef";
 import test17 from "./EqualityComparer.Iterable.LooseShape";
 import test18 from "./EqualityComparer.Iterable.LooseRef";
+import test19 from "./EqualityComparer.Iterable.TightRef";
+import test20 from "./EqualityComparer.Iterable.TightShape";
 
 const tests = [
-    ...test1,
-    ...test2,
-    ...test3,
-    ...test4,
-    ...test5,
-    ...test6,
-    ...test7,
-    ...test8,
-    ...test9,
-    ...test10,
-    ...test11,
-    ...test12,
-    ...test13,
-    ...test14,
-    ...test15,
-    ...test16,
-    ...test17,
-    ...test18,
+  ...test1,
+  ...test2,
+  ...test3,
+  ...test4,
+  ...test5,
+  ...test6,
+  ...test7,
+  ...test8,
+  ...test9,
+  ...test10,
+  ...test11,
+  ...test12,
+  ...test13,
+  ...test14,
+  ...test15,
+  ...test16,
+  ...test17,
+  ...test18,
+  ...test19,
+  ...test20,
 ];
 
-TestRunner.start(tests);
+TestRunner.start(tests, true);
