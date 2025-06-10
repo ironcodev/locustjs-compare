@@ -59,8 +59,17 @@ console.log(ec.equals(null, null)) // true
 console.log(ec.equals(undefined, undefined)) // true
 ```
 
-`EqualityComparer` class provides a static `Null` property which returns an object with `Loose` and `Tight` properties.
-They return default `NullOrEmptyEqualityComparer` instances with proper setting, making it easier to use `NullOrEmptyEqualityComparer` withought manually instantiating from this class.
+`NullOrEmptyEqualityComparer` has two helper static props that return default `NullOrEmptyEqualityComparer` instances with proper setting, making it easier to use `NullOrEmptyEqualityComparer` withought manually instantiating from this class:
+
+- `Loose`: returns a `new NullOrEmptyEqualityComparer(false)` instance.
+- `Tight`: returns a `new NullOrEmptyEqualityComparer(true)` instance.
+
+```javascript
+console.log(NullOrEmptyEqualityComparer.Loose.equals(null, undefined)) // true
+console.log(NullOrEmptyEqualityComparer.Tight.equals(null, undefined)) // false
+```
+
+Also, `EqualityComparer` class provides a static `Null` property which returns an object with `Loose` and `Tight` that refer to `NullOrEmptyEqualityComparer.Loose` and `NullOrEmptyEqualityComparer.Tight` static props respectively.
 
 ```javascript
 console.log(EqualityComparer.Null.Loose.equals(null, undefined)) // true
@@ -86,7 +95,24 @@ const ec = new StringEqualityComparer(StringEqualityComparerType.ignoreCase);
 console.log(ec.equals("hello", "Hello")) // true
 ```
 
-`EqualityComparer` class provides a static `String` property which returns an object with default `StringEqualityComparer` instances with proper setting, making it easier to use `StringEqualityComparer`.
+`StringEqualityComparer` has 4 helper static props that return default `StringEqualityComparer` instances with proper setting, making it easier to use `StringEqualityComparer` withought manually instantiating from this class:
+
+- `LooseOrdinal`: returns a `new StringEqualityComparer({ string: "ordinal", primitive: "loose" });` instance.
+- `LooseIgnoreCase`: returns a `new StringEqualityComparer({ string: "ignoreCase", primitive: "loose" });` instance.
+- `TightOrdinal`: returns a `new StringEqualityComparer({ string: "ordinal", primitive: "tight" });` instance.
+- `TightOrdinal`: returns a `new StringEqualityComparer({ string: "ordinal", primitive: "tight" });` instance.
+- `Ordinal`: returns the same instance as `LooseOrdinal`.
+- `IgnoreCase`: returns the same instance as `LooseIgnoreCase`.
+
+```javascript
+const s1 = "hello";
+const s2 = "Hello";
+
+console.log(StringEqualityComparer.Ordinal.equals(s1, s2)) // false
+console.log(StringEqualityComparer.IgnoreCase.equals(s1, s2)) // true
+```
+
+Also, `EqualityComparer` class provides a static `String` property which returns an object with relevant properties that refer to the similar static property in `StringEqualityComparer`.
 
 ```javascript
 const s1 = "hello";
@@ -118,7 +144,17 @@ console.log(ec.equals(true, "true")) // false
 console.log(ec.equals(true, new Boolean(true))) // true
 ```
 
-`EqualityComparer` class provides a static `Primitive` property which returns an object with default `PrimitiveEqualityComparer` instances with proper setting, making it easier to use `PrimitiveEqualityComparer`.
+`PrimitiveEqualityComparer` has 2 helper static props that return default `PrimitiveEqualityComparer` instances with proper setting, making it easier to use `PrimitiveEqualityComparer` withought manually instantiating from this class:
+
+- `Loose`: returns a `new PrimitiveEqualityComparer(false);` instance.
+- `Tight`: returns a `new PrimitiveEqualityComparer(true);` instance.
+
+```javascript
+console.log(PrimitiveEqualityComparer.Loose.equals(25, "25")) // true
+console.log(PrimitiveEqualityComparer.Tight.equals(25, "25")) // false
+```
+
+Also, `EqualityComparer` class provides a static `Primitive` property which returns an object with relevant properties that refer to the similar static property in `PrimitiveEqualityComparer`.
 
 ```javascript
 console.log(EqualityComparer.Primitive.Loose.equals(25, "25")) // true
@@ -156,7 +192,19 @@ console.log(ec.equals([25], ["25"])) // false
 console.log(ec.equals([{ a: 25 }], [{ a: 25 }])) // false
 ```
 
-`EqualityComparer` class provides a static `Array` property which returns an object with default `ArrayEqualityComparer` instances with proper setting, making it easier to use `ArrayEqualityComparer`.
+`ArrayEqualityComparer` has 4 helper static props that return default `ArrayEqualityComparer` instances with proper setting, making it easier to use `ArrayEqualityComparer` withought manually instantiating from this class:
+
+- `LooseShape`: returns a `new ArrayEqualityComparer(EqualityComparerOptions.LooseShape);` instance.
+- `TightShape`: returns a `new ArrayEqualityComparer(EqualityComparerOptions.TightShape);` instance.
+- `LooseRef`: returns a `new ArrayEqualityComparer(EqualityComparerOptions.LooseRef);` instance.
+- `TightRef`: returns a `new ArrayEqualityComparer(EqualityComparerOptions.TightRef);` instance.
+
+```javascript
+console.log(ArrayEqualityComparer.LooseShape.equals([25], ["25"])) // true
+console.log(ArrayEqualityComparer.TightShape.equals([25], ["25"])) // false
+```
+
+Also, `EqualityComparer` class provides a static `Array` property which returns an object with relevant properties that refer to the similar static property in `ArrayEqualityComparer`.
 
 ```javascript
 console.log(EqualityComparer.Array.LooseShape.equals([25], ["25"])) // true
@@ -196,7 +244,26 @@ console.log(ec.equals(f1(), f2())) // true
 By default, it performs `loose-shape` comparison, i.e., for primitive data types the comparison is `loose` and for complex data types (objects, arrays and iterables) the comparison is by `shape`.
 By passing a `EqualityComparerType` enum value, this can be changed.
 
-`EqualityComparer` class provides a static `Iterable` property which returns an object with default `IterableEqualityComparer` instances with proper setting, making it easier to use `IterableEqualityComparer`.
+`IterableEqualityComparer` has 4 helper static props that return default `IterableEqualityComparer` instances with proper setting, making it easier to use `IterableEqualityComparer` withought manually instantiating from this class:
+
+- `LooseShape`: returns a `new IterableEqualityComparer(EqualityComparerOptions.LooseShape);` instance.
+- `TightShape`: returns a `new IterableEqualityComparer(EqualityComparerOptions.TightShape);` instance.
+- `LooseRef`: returns a `new IterableEqualityComparer(EqualityComparerOptions.LooseRef);` instance.
+- `TightRef`: returns a `new IterableEqualityComparer(EqualityComparerOptions.TightRef);` instance.
+
+```javascript
+function* f1() {
+	yield 25;
+}
+function* f2() {
+	yield "25";
+}
+
+console.log(IterableEqualityComparer.LooseShape.equals(f1(), f2())) // true
+console.log(IterableEqualityComparer.TightShape.equals(f1(), f2())) // false
+```
+
+Also, `EqualityComparer` class provides a static `Iterable` property which returns an object with relevant properties that refer to the similar static property in `IterableEqualityComparer`.
 
 ```javascript
 function* f1() {
@@ -210,7 +277,7 @@ console.log(EqualityComparer.Iterable.LooseShape.equals(f1(), f2())) // true
 console.log(EqualityComparer.Iterable.TightShape.equals(f1(), f2())) // false
 ```
 
-if the two arguments passed to `IterableEqualityComparer` are arryas, it uses an internal `ArrayEqualityComparer` instance to compare the arguments.
+if the two arguments passed to `IterableEqualityComparer` are arryas, it uses two internal `ObjectEqualityComparer` and `ArrayEqualityComparer` instances to compare the arguments.
 
 ## ObjectEqualityComparer
 This class is used to check equality of Objects.
@@ -262,9 +329,24 @@ console.log(ec.equals(p1, p2)) // true
 ```
 
 By default, it performs `loose-shape` comparison, i.e., for primitive data types the comparison is `loose` and for complex data types the comparison is by `shape`.
+
 By passing a `EqualityComparerType` enum value, this can be changed.
 
-`EqualityComparer` class provides a static `Object` property which returns an object with default `ObjectEqualityComparer` instances with proper setting, making it easier to use `ObjectEqualityComparer`.
+`ObjectEqualityComparer` has 4 helper static props that return default `ObjectEqualityComparer` instances with proper setting, making it easier to use `ObjectEqualityComparer` withought manually instantiating from this class:
+
+- `LooseShape`: returns a `new ObjectEqualityComparer(EqualityComparerOptions.LooseShape);` instance.
+- `TightShape`: returns a `new ObjectEqualityComparer(EqualityComparerOptions.TightShape);` instance.
+- `LooseRef`: returns a `new ObjectEqualityComparer(EqualityComparerOptions.LooseRef);` instance.
+- `TightRef`: returns a `new ObjectEqualityComparer(EqualityComparerOptions.TightRef);` instance.
+
+```javascript
+const a = { x; 10, y: 23.5, name: "A101" }
+const b = { x; "10", y: "23.5", name: "A101" }
+
+console.log(ObjectEqualityComparer.TightShape.equals(a, b)) // false
+```
+
+Also, `EqualityComparer` class provides a static `Object` property which returns an object with relevant properties that refer to the similar static property in `ObjectEqualityComparer`.
 
 ```javascript
 const a = { x; 10, y: 23.5, name: "A101" }
@@ -273,7 +355,7 @@ const b = { x; "10", y: "23.5", name: "A101" }
 console.log(EqualityComparer.Object.TightShape.equals(a, b)) // false
 ```
 
-If an object includes nested objects or arrays, `ObjectEqualityComparer` uses itself and an internal `ArrayEqualityComparer` instance recursively to compare the arguments.
+If an object includes nested objects or arrays, `ObjectEqualityComparer` uses itself and an internal `ArrayEqualityComparer` and `IterableEqualityComparer` instances recursively to compare the arguments.
 
 ## FunctionEqualityComparer
 This class is used to check equality of functions.
@@ -301,7 +383,21 @@ const f2 = function() { }
 console.log(ec.equals(f1, f2)) // true
 ```
 
-`EqualityComparer` class provides a static `Function` property which returns an object with default `FunctionEqualityComparer` instances with proper setting, making it easier to use `FunctionEqualityComparer`.
+`FunctionEqualityComparer` has 2 helper static props that return default `FunctionEqualityComparer` instances with proper setting, making it easier to use `FunctionEqualityComparer` withought manually instantiating from this class:
+
+- `Ref`: returns a `new FunctionEqualityComparer(FunctionEqualityComparerType.ref);` instance.
+- `Source`: returns a `new FunctionEqualityComparer(FunctionEqualityComparerType.source);` instance.
+- `Ignore`: returns a `new FunctionEqualityComparer(FunctionEqualityComparerType.ignore);` instance.
+
+```javascript
+const f1 = function() { }
+const f2 = function() { }
+
+console.log(FunctionEqualityComparer.Ref.equals(f1, f2)) // false
+console.log(FunctionEqualityComparer.Source.equals(f1, f2)) // true
+```
+
+Also, `EqualityComparer` class provides a static `Function` property which returns an object with relevant properties that refer to the similar static property in `FunctionEqualityComparer`.
 
 ```javascript
 const f1 = function() { }
@@ -441,7 +537,7 @@ Assuming we have an rray of objects, we can write a `findElementIndex` method th
 
 ```javascript
 function findElementIndex(arr, obj) {
-    return arr.findIndex(x => EqualityComparer.Object.LooseShape.equals(x, obj))
+    return arr.findIndex(x => ObjectEqualityComparer.LooseShape.equals(x, obj))
 }
 function elementExists(arr, obj) {
     return findIndex(arr, obj) >= 0
@@ -470,19 +566,23 @@ We can also, extend functionality of native `Array.find` and `Array.findIndex` a
 const _native_array_find = Array.prototype.find;
 const _native_array_findIndex = Array.prototype.findIndex;
 
-Array.prototype.find = function (arg) {
+Array.prototype.find = function (arg, equalityComparer) {
     if (isFunction(arg)) {
         return _native_array_find.call(this, arg)
     }
 
-    return _native_array_find(x => EqualityComparer.Object.LooseShape.equals(x, arg))
+    const _equalityComparer = equalityComparer ?? ObjectEqualityComparer.LooseShape;
+
+    return _native_array_find(x => _equalityComparer.equals(x, arg))
 }
-Array.prototype.findIndex = function (arg) {
+Array.prototype.findIndex = function (arg, equalityComparer) {
     if (isFunction(arg)) {
         return _native_array_findIndex.call(this, arg)
     }
 
-    return _native_array_findIndex(x => EqualityComparer.Object.LooseShape.equals(x, arg))
+    const _equalityComparer = equalityComparer ?? ObjectEqualityComparer.LooseShape;
+
+    return _native_array_findIndex(x => _equalityComparer.equals(x, arg))
 }
 ```
 
@@ -490,11 +590,29 @@ Our final code will be this way:
 
 ```javascript
 const x = { id:  5, code: "ZP664", size: 36.37 }
-const y = data.find(x);
+
+// normal .find() usage (passing a predict callback)
+const y = data.find(a => a.id == x.id);
 
 console.log(y == undefined);    // false
-console.log(y == x);    // false
-console.log(data.findIndex(x));    // 4
+console.log(y == x);            // false
+
+// usage 1: passing value, using default comparer
+const y1 = data.find(x);
+
+console.log(y1 == undefined);   // false
+console.log(y1 == x);           // false
+console.log(data.findIndex(x)); // 4
+
+// usage 2: passing value, using custom comparer
+const y2 = data.find(x, ObjectEqualityComparer.TightShape);
+
+console.log(y2 == undefined);   // true
+
+const y3 = data.find(data[4], ObjectEqualityComparer.TightShape);
+
+console.log(y2 == undefined);   // false
+console.log(y2 == x);           // true
 ```
 
 

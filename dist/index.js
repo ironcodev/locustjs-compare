@@ -521,6 +521,43 @@ var FunctionEqualityComparer = /*#__PURE__*/function (_BaseEqualityComparer6) {
     }
   }]);
 }(BaseEqualityComparer);
+NullOrEmptyEqualityComparer.Loose = new NullOrEmptyEqualityComparer(false);
+NullOrEmptyEqualityComparer.Tight = new NullOrEmptyEqualityComparer(true);
+PrimitiveEqualityComparer.Loose = new PrimitiveEqualityComparer(false);
+PrimitiveEqualityComparer.Tight = new PrimitiveEqualityComparer(true);
+StringEqualityComparer.LooseOrdinal = new StringEqualityComparer({
+  string: "ordinal",
+  primitive: "loose"
+});
+StringEqualityComparer.LooseIgnoreCase = new StringEqualityComparer({
+  string: "ignoreCase",
+  primitive: "loose"
+});
+StringEqualityComparer.TightOrdinal = new StringEqualityComparer({
+  string: "ordinal",
+  primitive: "tight"
+});
+StringEqualityComparer.TightIgnoreCase = new StringEqualityComparer({
+  string: "ignoreCase",
+  primitive: "tight"
+});
+StringEqualityComparer.Ordinal = StringEqualityComparer.LooseOrdinal;
+StringEqualityComparer.IgnoreCase = StringEqualityComparer.LooseIgnoreCase;
+FunctionEqualityComparer.Ref = new FunctionEqualityComparer(FunctionEqualityComparerType.ref);
+FunctionEqualityComparer.Source = new FunctionEqualityComparer(FunctionEqualityComparerType.source);
+FunctionEqualityComparer.Ignore = new FunctionEqualityComparer(FunctionEqualityComparerType.ignore);
+ArrayEqualityComparer.LooseShape = new ArrayEqualityComparer(EqualityComparerOptions.LooseShape);
+ArrayEqualityComparer.TightShape = new ArrayEqualityComparer(EqualityComparerOptions.TightShape);
+ArrayEqualityComparer.LooseRef = new ArrayEqualityComparer(EqualityComparerOptions.LooseRef);
+ArrayEqualityComparer.TightRef = new ArrayEqualityComparer(EqualityComparerOptions.TightRef);
+ObjectEqualityComparer.LooseShape = new ObjectEqualityComparer(EqualityComparerOptions.LooseShape);
+ObjectEqualityComparer.TightShape = new ObjectEqualityComparer(EqualityComparerOptions.TightShape);
+ObjectEqualityComparer.LooseRef = new ObjectEqualityComparer(EqualityComparerOptions.LooseRef);
+ObjectEqualityComparer.TightRef = new ObjectEqualityComparer(EqualityComparerOptions.TightRef);
+IterableEqualityComparer.LooseShape = new IterableEqualityComparer(EqualityComparerOptions.LooseShape);
+IterableEqualityComparer.TightShape = new IterableEqualityComparer(EqualityComparerOptions.TightShape);
+IterableEqualityComparer.LooseRef = new IterableEqualityComparer(EqualityComparerOptions.LooseRef);
+IterableEqualityComparer.TightRef = new IterableEqualityComparer(EqualityComparerOptions.TightRef);
 
 var Comparer = /*#__PURE__*/function () {
   function Comparer() {
@@ -591,55 +628,43 @@ var isEqualityComparer = function isEqualityComparer(x) {
 };
 
 EqualityComparer.Null = {
-  Loose: new NullOrEmptyEqualityComparer(false),
-  Tight: new NullOrEmptyEqualityComparer(true)
+  Loose: NullOrEmptyEqualityComparer.Loose,
+  Tight: NullOrEmptyEqualityComparer.Tight
 };
 EqualityComparer.Function = {
-  Ref: new FunctionEqualityComparer(FunctionEqualityComparerType.ref),
-  Source: new FunctionEqualityComparer(FunctionEqualityComparerType.source),
-  Ignore: new FunctionEqualityComparer(FunctionEqualityComparerType.ignore)
+  Ref: FunctionEqualityComparer.Ref,
+  Source: FunctionEqualityComparer.Source,
+  Ignore: FunctionEqualityComparer.Ignore
 };
 EqualityComparer.String = {
-  LooseOrdinal: new StringEqualityComparer({
-    string: "ordinal",
-    primitive: "loose"
-  }),
-  LooseIgnoreCase: new StringEqualityComparer({
-    string: "ignoreCase",
-    primitive: "loose"
-  }),
-  TightOrdinal: new StringEqualityComparer({
-    string: "ordinal",
-    primitive: "tight"
-  }),
-  TightIgnoreCase: new StringEqualityComparer({
-    string: "ignoreCase",
-    primitive: "tight"
-  })
+  LooseOrdinal: StringEqualityComparer.LooseOrdinal,
+  LooseIgnoreCase: StringEqualityComparer.LooseIgnoreCase,
+  TightOrdinal: StringEqualityComparer.TightOrdinal,
+  TightIgnoreCase: StringEqualityComparer.TightIgnoreCase
 };
-EqualityComparer.String.Ordinal = EqualityComparer.String.LooseOrdinal;
-EqualityComparer.String.IgnoreCase = EqualityComparer.String.LooseIgnoreCase;
+EqualityComparer.String.Ordinal = StringEqualityComparer.LooseOrdinal;
+EqualityComparer.String.IgnoreCase = StringEqualityComparer.LooseIgnoreCase;
 EqualityComparer.Primitive = {
-  Loose: new PrimitiveEqualityComparer(false),
-  Tight: new PrimitiveEqualityComparer(true)
+  Loose: PrimitiveEqualityComparer.Loose,
+  Tight: PrimitiveEqualityComparer.Tight
 };
 EqualityComparer.Array = {
-  LooseShape: new ArrayEqualityComparer(EqualityComparerOptions.LooseShape),
-  TightShape: new ArrayEqualityComparer(EqualityComparerOptions.TightShape),
-  LooseRef: new ArrayEqualityComparer(EqualityComparerOptions.LooseRef),
-  TightRef: new ArrayEqualityComparer(EqualityComparerOptions.TightRef)
+  LooseShape: ArrayEqualityComparer.LooseShape,
+  TightShape: ArrayEqualityComparer.TightShape,
+  LooseRef: ArrayEqualityComparer.LooseRef,
+  TightRef: ArrayEqualityComparer.TightRef
 };
 EqualityComparer.Iterable = {
-  LooseShape: new IterableEqualityComparer(EqualityComparerOptions.LooseShape),
-  TightShape: new IterableEqualityComparer(EqualityComparerOptions.TightShape),
-  LooseRef: new IterableEqualityComparer(EqualityComparerOptions.LooseRef),
-  TightRef: new IterableEqualityComparer(EqualityComparerOptions.TightRef)
+  LooseShape: IterableEqualityComparer.LooseShape,
+  TightShape: IterableEqualityComparer.TightShape,
+  LooseRef: IterableEqualityComparer.LooseRef,
+  TightRef: IterableEqualityComparer.TightRef
 };
 EqualityComparer.Object = {
-  LooseShape: new ObjectEqualityComparer(EqualityComparerOptions.LooseShape),
-  TightShape: new ObjectEqualityComparer(EqualityComparerOptions.TightShape),
-  LooseRef: new ObjectEqualityComparer(EqualityComparerOptions.LooseRef),
-  TightRef: new ObjectEqualityComparer(EqualityComparerOptions.TightRef)
+  LooseShape: ObjectEqualityComparer.LooseShape,
+  TightShape: ObjectEqualityComparer.TightShape,
+  LooseRef: ObjectEqualityComparer.LooseRef,
+  TightRef: ObjectEqualityComparer.TightRef
 };
 
 exports.ArrayEqualityComparer = ArrayEqualityComparer;

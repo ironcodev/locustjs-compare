@@ -1,6 +1,6 @@
 {
   "name": "@locustjs/compare",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "This library provides abstractions for comparison and comparers",
   "main": "dist/index.js",
   "module": "src/index.js",

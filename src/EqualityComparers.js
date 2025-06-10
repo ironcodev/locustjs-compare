@@ -6,10 +6,14 @@ import {
   isObject,
   isString,
   isFunction,
-  isBool
+  isBool,
 } from "@locustjs/base";
 import EqualityComparer from "./EqualityComparer";
-import { ScalerEqualityComparerType } from "./enums";
+import {
+  ScalerEqualityComparerType,
+  FunctionEqualityComparerType,
+} from "./enums";
+import EqualityComparerOptions from "./EqualityComparerOptions";
 
 class BaseEqualityComparer extends EqualityComparer {
   constructor(options, prop) {
@@ -358,6 +362,81 @@ class FunctionEqualityComparer extends BaseEqualityComparer {
     return false;
   }
 }
+
+NullOrEmptyEqualityComparer.Loose = new NullOrEmptyEqualityComparer(false);
+NullOrEmptyEqualityComparer.Tight = new NullOrEmptyEqualityComparer(true);
+
+PrimitiveEqualityComparer.Loose = new PrimitiveEqualityComparer(false);
+PrimitiveEqualityComparer.Tight = new PrimitiveEqualityComparer(true);
+
+StringEqualityComparer.LooseOrdinal = new StringEqualityComparer({
+  string: "ordinal",
+  primitive: "loose",
+});
+StringEqualityComparer.LooseIgnoreCase = new StringEqualityComparer({
+  string: "ignoreCase",
+  primitive: "loose",
+});
+StringEqualityComparer.TightOrdinal = new StringEqualityComparer({
+  string: "ordinal",
+  primitive: "tight",
+});
+StringEqualityComparer.TightIgnoreCase = new StringEqualityComparer({
+  string: "ignoreCase",
+  primitive: "tight",
+});
+
+StringEqualityComparer.Ordinal = StringEqualityComparer.LooseOrdinal;
+StringEqualityComparer.IgnoreCase = StringEqualityComparer.LooseIgnoreCase;
+
+FunctionEqualityComparer.Ref = new FunctionEqualityComparer(
+  FunctionEqualityComparerType.ref
+);
+FunctionEqualityComparer.Source = new FunctionEqualityComparer(
+  FunctionEqualityComparerType.source
+);
+FunctionEqualityComparer.Ignore = new FunctionEqualityComparer(
+  FunctionEqualityComparerType.ignore
+);
+
+ArrayEqualityComparer.LooseShape = new ArrayEqualityComparer(
+  EqualityComparerOptions.LooseShape
+);
+ArrayEqualityComparer.TightShape = new ArrayEqualityComparer(
+  EqualityComparerOptions.TightShape
+);
+ArrayEqualityComparer.LooseRef = new ArrayEqualityComparer(
+  EqualityComparerOptions.LooseRef
+);
+ArrayEqualityComparer.TightRef = new ArrayEqualityComparer(
+  EqualityComparerOptions.TightRef
+);
+
+ObjectEqualityComparer.LooseShape = new ObjectEqualityComparer(
+  EqualityComparerOptions.LooseShape
+);
+ObjectEqualityComparer.TightShape = new ObjectEqualityComparer(
+  EqualityComparerOptions.TightShape
+);
+ObjectEqualityComparer.LooseRef = new ObjectEqualityComparer(
+  EqualityComparerOptions.LooseRef
+);
+ObjectEqualityComparer.TightRef = new ObjectEqualityComparer(
+  EqualityComparerOptions.TightRef
+);
+
+IterableEqualityComparer.LooseShape = new IterableEqualityComparer(
+  EqualityComparerOptions.LooseShape
+);
+IterableEqualityComparer.TightShape = new IterableEqualityComparer(
+  EqualityComparerOptions.TightShape
+);
+IterableEqualityComparer.LooseRef = new IterableEqualityComparer(
+  EqualityComparerOptions.LooseRef
+);
+IterableEqualityComparer.TightRef = new IterableEqualityComparer(
+  EqualityComparerOptions.TightRef
+);
 
 export {
   BaseEqualityComparer,
